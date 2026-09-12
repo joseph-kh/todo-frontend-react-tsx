@@ -1,0 +1,9 @@
+# Vite build output
+dist
+dist-ssr
+
+# npm lockfile (generated, committed)
+package-lock.json
+
+# Husky generated internals
+.husky/_
