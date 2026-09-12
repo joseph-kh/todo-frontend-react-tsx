@@ -1,35 +1,45 @@
-_This projet was made by Nour Mina as part of the IDS Fintech Backend Training Program_ <br> <br>
+_This project was made by Nour Mina as part of the IDS Fintech Backend Training Program_ <br><br>
 _website: https://todo-frontend-react-tsx.vercel.app/_ <br>
 _github repo: https://github.com/nourrminaa/todo-frontend-react-tsx_ <br>
 
 # 1. Task Tracker
 
-No backend & no database: everything lives in the browser's `localStorage`, so the tasks are still there next time the page is opened (on the same browser & same computer) built with **React + TypeScript + Vite**.
+A small browser-only task tracker built with **React + TypeScript + Vite**. There is no backend or database; tasks are stored in the browser's `localStorage`, so they remain available when the app is reopened on the same browser and computer.
 
 ## 2. What it does
 
 - Add new tasks
 - Edit a task's text
 - Delete a task
-- Check a task off as completed / uncheck it
-- Filter the list by **All**, **Incomplete** or **Completed**
-- Everything is saved to `localStorage`
+- Mark a task as completed or incomplete
+- Filter tasks by **All**, **Incomplete**, or **Completed**
+- Persist tasks to `localStorage`
+- Recover safely from malformed persisted data
+- Provide keyboard- and screen-reader-friendly controls
 
 ## 3. Project structure
 
-```
-todo-app/
-├── index.html              the one HTML page
+```text
+├── .husky/
+│   ├── pre-commit          lint-staged (eslint + prettier on staged files)
+│   └── commit-msg          commitlint
+├── .lintstagedrc.js
+├── .prettierrc
+├── .prettierignore
+├── commitlint.config.js
+├── eslint.config.js
+├── index.html
 ├── src/
 │   ├── main.tsx            entry point: renders <App /> into #root
-│   ├── App.tsx             owns all the state, talks to localStorage
+│   ├── App.tsx             owns task/filter state and persistence
 │   ├── App.css
-│   ├── index.css           shared styles
+│   ├── index.css           shared styles and accessibility utilities
+│   ├── storage.ts          localStorage parsing, validation, and persistence
 │   ├── types.ts            shared TypeScript types (Task, FilterType)
 │   └── components/
-│       ├── TaskForm.tsx    "add a new task" input + button
-│       ├── FilterBar.tsx   the All / Incomplete / Completed tabs
-│       ├── TaskList.tsx    maps tasks to TaskItem
+│       ├── TaskForm.tsx    add-task form
+│       ├── FilterBar.tsx   All / Incomplete / Completed controls
+│       ├── TaskList.tsx    task collection and empty state
 │       ├── TaskItem.tsx    one task row (checkbox, edit, delete)
 │       └── *.css           one stylesheet file per component
 ├── package.json
@@ -38,30 +48,45 @@ todo-app/
 
 ## 4. How the data flows
 
-1. `App.tsx` holds the **only** copy of the task list, in a `useState<Task[]>([])`
-2. On the very first render, a `useEffect` with an empty `[]` dependency array reads any saved tasks out of `localStorage`
-3. Every time the task list changes, a second `useEffect` (dependency array `[tasks]`) writes the current list back into `localStorage`
-4. `App` passes the task list (or a filtered version of it) and handler functions (`addTask`, `toggleTask`, `deleteTask`,`editTask`) down to its children as **props**. This is called the "Lifting State Up" pattern child components never touch `localStorage` or hold their own copy of the tasks, they just call the function they were given
-5. `TaskItem` does keep one small piece of _local_ state (`isEditing`), because nothing outside that single row needs to know about it.
+1. `App.tsx` owns the task list in `useState<Task[]>`.
+2. The lazy state initializer calls `loadTasks()`, which parses and validates persisted data. Invalid or malformed data falls back safely instead of crashing the app.
+3. Add, toggle, edit, and delete go through `updateTasks()`, which updates React state and then calls `saveTasks()`. A failed write sets `persistenceError` and shows an alert.
+4. `App` passes the filtered tasks and handler functions (`addTask`, `toggleTask`, `deleteTask`, `editTask`) to child components as props.
+5. `updateTasks()` applies each change to the latest list (kept in a ref) so rapid updates do not overwrite each other.
+6. `TaskItem` keeps only editing UI state locally because that state is specific to one row.
 
 ## 5. Requirements & how to run it
 
+Check that Node.js is installed:
+
 ```bash
-node - v; # check you have Node.js installed
+node -v
 ```
 
-5.1. Install the dependencies:
+Install dependencies:
 
-```
+```bash
 npm install
 ```
 
-5.2. Start the local dev server:
+Start the development server:
 
-```
+```bash
 npm run dev
 ```
 
-5.3. Open the URL it prints in your terminal in your browser and tada.
+Run the checks:
 
-</br>_end._
+```bash
+npm run lint
+npm run format:check
+npm run build
+```
+
+Auto-format files:
+
+```bash
+npm run format:fix
+```
+
+Then open the URL printed by Vite in your browser.
