@@ -16,6 +16,7 @@ A small browser-only task tracker built with **React + TypeScript + Vite**. Ther
 - Persist tasks to `localStorage`
 - Recover safely from malformed persisted data
 - Provide keyboard- and screen-reader-friendly controls
+- Celebrate with a confetti burst when every task becomes completed
 
 ## 3. Project structure
 
@@ -34,6 +35,7 @@ A small browser-only task tracker built with **React + TypeScript + Vite**. Ther
 │   ├── App.tsx             owns task/filter state and persistence
 │   ├── App.css
 │   ├── index.css           shared styles and accessibility utilities
+│   ├── celebrate.ts        canvas-confetti burst when all tasks become done
 │   ├── storage.ts          localStorage parsing, validation, and persistence
 │   ├── types.ts            shared TypeScript types (Task, FilterType)
 │   └── components/

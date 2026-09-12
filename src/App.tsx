@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { Task, FilterType } from './types'
+import { celebrateAllTasksDone } from './celebrate'
 import { loadTasks, saveTasks } from './storage'
 import { TaskForm } from './components/TaskForm'
 import { FilterBar } from './components/FilterBar'
@@ -19,10 +20,18 @@ function App() {
   const tasksRef = useRef(tasks)
 
   function updateTasks(updater: (currentTasks: Task[]) => Task[]) {
-    const nextTasks = updater(tasksRef.current)
+    const previousTasks = tasksRef.current
+    const nextTasks = updater(previousTasks)
+    const wasAllDone =
+      previousTasks.length > 0 && previousTasks.every((task) => task.completed)
+    const isAllDone =
+      nextTasks.length > 0 && nextTasks.every((task) => task.completed)
+
     tasksRef.current = nextTasks
     setTasks(nextTasks)
     setPersistenceError(!saveTasks(nextTasks))
+
+    if (!wasAllDone && isAllDone) celebrateAllTasksDone()
   }
 
   function addTask(text: string) {
