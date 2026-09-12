@@ -1,71 +1,88 @@
-import { useEffect, useState } from "react";
-import type { Task, FilterType } from "./types";
-import { TaskForm } from "./components/TaskForm";
-import { FilterBar } from "./components/FilterBar";
-import { TaskList } from "./components/TaskList";
-import "./App.css";
+import { useRef, useState } from 'react'
+import type { Task, FilterType } from './types'
+import { loadTasks, saveTasks } from './storage'
+import { TaskForm } from './components/TaskForm'
+import { FilterBar } from './components/FilterBar'
+import { TaskList } from './components/TaskList'
+import './App.css'
 
-const STORAGE_KEY = "task-tracker-tasks";
+function getEmptyMessage(filter: FilterType) {
+  if (filter === 'completed') return 'No completed tasks.'
+  if (filter === 'incomplete') return 'No incomplete tasks.'
+  return 'No tasks yet.'
+}
 
 function App() {
-  const [filter, setFilter] = useState<FilterType>("all");
+  const [filter, setFilter] = useState<FilterType>('all')
+  const [tasks, setTasks] = useState<Task[]>(loadTasks)
+  const [persistenceError, setPersistenceError] = useState(false)
+  const tasksRef = useRef(tasks)
 
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  }, [tasks]);
+  function updateTasks(updater: (currentTasks: Task[]) => Task[]) {
+    const nextTasks = updater(tasksRef.current)
+    tasksRef.current = nextTasks
+    setTasks(nextTasks)
+    setPersistenceError(!saveTasks(nextTasks))
+  }
 
   function addTask(text: string) {
     const newTask: Task = {
       id: crypto.randomUUID(),
       text,
       completed: false,
-    };
-    setTasks([...tasks, newTask]);
+    }
+
+    updateTasks((currentTasks) => [...currentTasks, newTask])
   }
 
   function toggleTask(id: string) {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task,
-      ),
-    );
+    updateTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    )
   }
 
   function deleteTask(id: string) {
-    setTasks(tasks.filter((task) => task.id !== id));
+    updateTasks((currentTasks) => currentTasks.filter((task) => task.id !== id))
   }
 
   function editTask(id: string, newText: string) {
-    setTasks(
-      tasks.map((task) => (task.id === id ? { ...task, text: newText } : task)),
-    );
+    updateTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === id ? { ...task, text: newText } : task
+      )
+    )
   }
 
   const filteredTasks = tasks.filter((task) => {
-    if (filter === "completed") return task.completed;
-    if (filter === "incomplete") return !task.completed;
-    return true;
-  });
+    if (filter === 'completed') return task.completed
+    if (filter === 'incomplete') return !task.completed
+    return true
+  })
 
-  const completedCount = tasks.filter((task) => task.completed).length;
+  const completedCount = tasks.filter((task) => task.completed).length
   const progress =
-    tasks.length === 0 ? 0 : (completedCount / tasks.length) * 100;
+    tasks.length === 0 ? 0 : (completedCount / tasks.length) * 100
 
   return (
     <main className="app-card">
       <header className="app-header">
         <div className="app-header-top">
           <h1>Task Tracker</h1>
-          <span className="app-count">
+          <span className="app-count" aria-live="polite">
             {completedCount}/{tasks.length} done
           </span>
         </div>
-        <div className="app-progress-track">
+        <div
+          className="app-progress-track"
+          role="progressbar"
+          aria-label="Task completion"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(progress)}
+          aria-valuetext={`${completedCount} of ${tasks.length} tasks completed`}
+        >
           <div
             className="app-progress-fill"
             style={{ width: `${progress}%` }}
@@ -73,16 +90,23 @@ function App() {
         </div>
       </header>
 
+      {persistenceError && (
+        <p className="app-storage-error" role="alert">
+          Changes could not be saved in this browser.
+        </p>
+      )}
+
       <TaskForm onAddTask={addTask} />
       <FilterBar currentFilter={filter} onChangeFilter={setFilter} />
       <TaskList
         tasks={filteredTasks}
+        emptyMessage={getEmptyMessage(filter)}
         onToggle={toggleTask}
         onDelete={deleteTask}
         onEdit={editTask}
       />
     </main>
-  );
+  )
 }
 
-export default App;
+export default App
