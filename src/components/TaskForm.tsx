@@ -1,44 +1,42 @@
-import { useState } from "react";
-import "./TaskForm.css";
+import { useState } from 'react'
+import './TaskForm.css'
 
 interface TaskFormProps {
-  onAddTask: (text: string) => void;
+  onAddTask: (text: string) => void
 }
 
 export function TaskForm({ onAddTask }: TaskFormProps) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState('')
+  const trimmedText = text.trim()
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setText(e.target.value);
-  }
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (trimmedText === '') return
 
-  function handleAddClick() {
-    const trimmed = text.trim();
-    if (trimmed === "") return;
-
-    onAddTask(trimmed);
-    setText("");
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      handleAddClick();
-    }
+    onAddTask(trimmedText)
+    setText('')
   }
 
   return (
-    <div className="task-form">
+    <form className="task-form" onSubmit={handleSubmit}>
+      <label className="sr-only" htmlFor="new-task">
+        New task
+      </label>
       <input
+        id="new-task"
         type="text"
         className="task-form-input"
         placeholder="Add a new task..."
         value={text}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
+        onChange={(e) => setText(e.target.value)}
       />
-      <button className="task-form-button" onClick={handleAddClick}>
+      <button
+        type="submit"
+        className="task-form-button"
+        disabled={trimmedText === ''}
+      >
         Add
       </button>
-    </div>
-  );
+    </form>
+  )
 }

@@ -13,7 +13,7 @@
 .task-item-checkbox {
   width: 18px;
   height: 18px;
-  accent-color: var(--color-accent);
+  accent-color: var(--color-accent-strong);
   flex-shrink: 0;
   cursor: pointer;
 }
@@ -22,6 +22,7 @@
   flex: 1;
   font-size: 15px;
   word-break: break-word;
+  cursor: pointer;
 }
 
 .task-item-text-done {
@@ -36,12 +37,21 @@
   padding: 6px 10px;
   border-radius: 6px;
   flex-shrink: 0;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
-.task-item-btn:hover {
+.task-item-btn:hover:not(:disabled) {
   background: var(--color-bg);
   color: var(--color-text);
+}
+
+.task-item-btn:focus-visible,
+.task-item-checkbox:focus-visible,
+.task-item-edit-input:focus-visible {
+  outline: 2px solid var(--color-accent-strong);
+  outline-offset: 2px;
 }
 
 .task-item-delete:hover {
@@ -49,14 +59,34 @@
 }
 
 .task-item-save {
-  color: var(--color-accent);
+  color: var(--color-accent-strong);
+}
+
+.task-item-btn:disabled {
+  opacity: 0.45;
 }
 
 .task-item-edit-input {
   flex: 1;
+  min-width: 0;
   padding: 8px 10px;
-  border: 1px solid var(--color-accent);
+  border: 1px solid var(--color-accent-strong);
   border-radius: 8px;
   font-size: 15px;
   outline: none;
+}
+
+.task-item-edit-input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+@media (max-width: 480px) {
+  .task-item {
+    flex-wrap: wrap;
+  }
+
+  .task-item-text,
+  .task-item-edit-input {
+    min-width: calc(100% - 32px);
+  }
 }

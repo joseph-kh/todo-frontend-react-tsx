@@ -1,86 +1,104 @@
-import { useState } from "react";
-import type { Task } from "../types";
-import "./TaskItem.css";
+import { useState } from 'react'
+import type { Task } from '../types'
+import './TaskItem.css'
 
 interface TaskItemProps {
-  task: Task;
-  onToggle: (id: string) => void;
-  onDelete: (id: string) => void;
-  onEdit: (id: string, newText: string) => void;
+  task: Task
+  onToggle: (id: string) => void
+  onDelete: (id: string) => void
+  onEdit: (id: string, newText: string) => void
 }
 
 export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [draftText, setDraftText] = useState(task.text);
+  const [isEditing, setIsEditing] = useState(false)
+  const [draftText, setDraftText] = useState(task.text)
+  const checkboxId = `task-${task.id}`
+  const trimmedDraft = draftText.trim()
+  const isDraftEmpty = trimmedDraft === ''
 
   function startEditing() {
-    setDraftText(task.text);
-    setIsEditing(true);
+    setDraftText(task.text)
+    setIsEditing(true)
   }
 
   function cancelEditing() {
-    setIsEditing(false);
+    setDraftText(task.text)
+    setIsEditing(false)
   }
 
   function saveEditing() {
-    const trimmed = draftText.trim();
-    if (trimmed === "") return;
-    onEdit(task.id, trimmed);
-    setIsEditing(false);
-  }
+    if (isDraftEmpty) return
 
-  function handleDraftChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setDraftText(e.target.value);
+    onEdit(task.id, trimmedDraft)
+    setIsEditing(false)
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") saveEditing();
-    if (e.key === "Escape") cancelEditing();
+    if (e.key === 'Enter') saveEditing()
+    if (e.key === 'Escape') cancelEditing()
   }
 
   return (
     <li className="task-item">
       {isEditing ? (
         <>
+          <label className="sr-only" htmlFor={`edit-${task.id}`}>
+            Edit task: {task.text}
+          </label>
           <input
+            id={`edit-${task.id}`}
             type="text"
             className="task-item-edit-input"
             value={draftText}
-            onChange={handleDraftChange}
+            aria-invalid={isDraftEmpty}
+            onChange={(e) => setDraftText(e.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
           />
           <button
+            type="button"
             className="task-item-btn task-item-save"
             onClick={saveEditing}
+            disabled={isDraftEmpty}
           >
             Save
           </button>
-          <button className="task-item-btn" onClick={cancelEditing}>
+          <button
+            type="button"
+            className="task-item-btn"
+            onClick={cancelEditing}
+          >
             Cancel
           </button>
         </>
       ) : (
         <>
           <input
+            id={checkboxId}
             type="checkbox"
             className="task-item-checkbox"
             checked={task.completed}
             onChange={() => onToggle(task.id)}
           />
-          <span
+          <label
+            htmlFor={checkboxId}
             className={
               task.completed
-                ? "task-item-text task-item-text-done"
-                : "task-item-text"
+                ? 'task-item-text task-item-text-done'
+                : 'task-item-text'
             }
           >
             {task.text}
-          </span>
-          <button className="task-item-btn" onClick={startEditing}>
+          </label>
+          <button
+            type="button"
+            className="task-item-btn"
+            onClick={startEditing}
+          >
             Edit
           </button>
           <button
+            type="button"
             className="task-item-btn task-item-delete"
             onClick={() => onDelete(task.id)}
           >
@@ -89,5 +107,5 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
         </>
       )}
     </li>
-  );
+  )
 }

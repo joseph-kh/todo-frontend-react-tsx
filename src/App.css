@@ -52,3 +52,13 @@
     border-radius: 12px;
   }
 }
+
+.app-storage-error {
+  margin: -8px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #f4b4b6;
+  border-radius: 8px;
+  background: #fff4f4;
+  color: #8a1c20;
+  font-size: 13px;
+}
