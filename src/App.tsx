@@ -6,6 +6,7 @@ import { TaskForm } from './components/TaskForm'
 import { FilterBar } from './components/FilterBar'
 import { TaskList } from './components/TaskList'
 import './App.css'
+import { arrayMove } from '@dnd-kit/sortable'
 
 function getEmptyMessage(filter: FilterType) {
   if (filter === 'completed') return 'No completed tasks.'
@@ -64,6 +65,15 @@ function App() {
     )
   }
 
+  function reorderTask(activeId: string, overId: string) {
+    updateTasks((currentTasks) => {
+      const oldIndex = currentTasks.findIndex((t) => t.id === activeId)
+      const newIndex = currentTasks.findIndex((t) => t.id === overId)
+      if (oldIndex === -1 || newIndex === -1) return currentTasks
+      return arrayMove(currentTasks, oldIndex, newIndex)
+    })
+  }
+
   const filteredTasks = tasks.filter((task) => {
     if (filter === 'completed') return task.completed
     if (filter === 'incomplete') return !task.completed
@@ -113,6 +123,7 @@ function App() {
         onToggle={toggleTask}
         onDelete={deleteTask}
         onEdit={editTask}
+        onReorder={reorderTask}
       />
     </main>
   )

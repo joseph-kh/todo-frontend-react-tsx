@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { Task } from '../types'
 import './TaskItem.css'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface TaskItemProps {
   task: Task
@@ -15,6 +17,9 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
   const checkboxId = `task-${task.id}`
   const trimmedDraft = draftText.trim()
   const isDraftEmpty = trimmedDraft === ''
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: task.id })
+  const style = { transform: CSS.Transform.toString(transform), transition }
 
   function startEditing() {
     setDraftText(task.text)
@@ -39,7 +44,13 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
   }
 
   return (
-    <li className="task-item">
+    <li
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="task-item"
+    >
       {isEditing ? (
         <>
           <label className="sr-only" htmlFor={`edit-${task.id}`}>

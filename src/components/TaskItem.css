@@ -8,6 +8,11 @@
   border-radius: var(--radius);
   background: var(--color-surface);
   margin-bottom: 8px;
+  cursor: grab;
+}
+
+.task-item:active {
+  cursor: grabbing;
 }
 
 .task-item-checkbox {
@@ -22,7 +27,11 @@
   flex: 1;
   font-size: 15px;
   word-break: break-word;
-  cursor: pointer;
+  cursor: grab;
+}
+
+.task-item-text:active {
+  cursor: grabbing;
 }
 
 .task-item-text-done {
