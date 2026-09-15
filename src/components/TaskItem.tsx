@@ -6,19 +6,32 @@ import { CSS } from '@dnd-kit/utilities'
 
 interface TaskItemProps {
   task: Task
+  controlNonce: number
   onToggle: (id: string) => void
   onDelete: (id: string) => void
   onEdit: (id: string, newText: string) => void
 }
 
-export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
+export function TaskItem({
+  task,
+  controlNonce,
+  onToggle,
+  onDelete,
+  onEdit,
+}: TaskItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [draftText, setDraftText] = useState(task.text)
   const checkboxId = `task-${task.id}`
   const trimmedDraft = draftText.trim()
   const isDraftEmpty = trimmedDraft === ''
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: task.id })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id })
   const style = { transform: CSS.Transform.toString(transform), transition }
 
   function startEditing() {
@@ -43,13 +56,17 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
     if (e.key === 'Escape') cancelEditing()
   }
 
+  function stopDragOnPointerDown(e: React.PointerEvent) {
+    e.stopPropagation()
+  }
+
   return (
     <li
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      className="task-item"
+      className={isDragging ? 'task-item task-item-dragging' : 'task-item'}
     >
       {isEditing ? (
         <>
@@ -62,6 +79,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
             className="task-item-edit-input"
             value={draftText}
             aria-invalid={isDraftEmpty}
+            onPointerDown={stopDragOnPointerDown}
             onChange={(e) => setDraftText(e.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
@@ -69,6 +87,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
           <button
             type="button"
             className="task-item-btn task-item-save"
+            onPointerDown={stopDragOnPointerDown}
             onClick={saveEditing}
             disabled={isDraftEmpty}
           >
@@ -77,6 +96,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
           <button
             type="button"
             className="task-item-btn"
+            onPointerDown={stopDragOnPointerDown}
             onClick={cancelEditing}
           >
             Cancel
@@ -85,10 +105,12 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
       ) : (
         <>
           <input
+            key={controlNonce}
             id={checkboxId}
             type="checkbox"
             className="task-item-checkbox"
             checked={task.completed}
+            onPointerDown={stopDragOnPointerDown}
             onChange={() => onToggle(task.id)}
           />
           <label
@@ -104,6 +126,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
           <button
             type="button"
             className="task-item-btn"
+            onPointerDown={stopDragOnPointerDown}
             onClick={startEditing}
           >
             Edit
@@ -111,6 +134,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
           <button
             type="button"
             className="task-item-btn task-item-delete"
+            onPointerDown={stopDragOnPointerDown}
             onClick={() => onDelete(task.id)}
           >
             Delete
